@@ -1,6 +1,8 @@
 from scrapy.selector import Selector
 import requests
 
+cache = {}
+
 def get_graded_value(args):
     fn = {
         "ngc" : {
@@ -24,21 +26,37 @@ def get_spot_value(args):
         "silver" : "USD-XAG",
         "gold" : "USD-XAU"
     }
+    
+    oz = float(args["oz"])
     response = requests.get(
         f"https://data-asg.goldprice.org/GetData/{metalMap[args['type']]}/1", 
         headers={'User-Agent': 'All those moments will be lost in time, like tears in rain.'})
-    return response.json()[0].split(",")[1]
+    
+    value = response.json()[0].split(",")[1]
+    value = float(value) * oz
+    return value
 
-
-def controller(args):
+def _controller(args):
     if args["type"] in ["pcgs", "ngc"]:
         return get_graded_value(args)
     elif args["type"] in ["gold", "silver"]:
         return get_spot_value(args)
 
+def controller(args):
+    argsHash = hash(frozenset(args.items()))
+    try:
+        value = _controller(args)
+        cache[argsHash] = value
+    except:
+        print("There was a failure so reading from the cache.")
+        value = cache[argsHash]
+    return value
+
+
 if __name__ == "__main__":
     print("Value:", controller({"certNumber": "31611193", "type": "pcgs"}))
     print("Value:", controller({"certNumber": "4395155-025", "grade": '62', "type": "ngc"}))
-    print("Value:", controller({"type": "gold"}))
-    print("Value:", controller({"type": "silver"}))
-    print("Value:", controller({"type": "chicken"}))
+    print("Value:", controller({"type": "gold", "oz" : "1"}))
+    print("Value:", controller({"type": "gold", "oz" : "2"}))
+    print("Value:", controller({"type": "gold", "oz" : "0.5"}))
+    print("Value:", controller({"type": "silver", "oz" : "0.9"}))
