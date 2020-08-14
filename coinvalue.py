@@ -1,5 +1,6 @@
 from scrapy.selector import Selector
 import requests
+import time
 
 cache = {}
 
@@ -19,7 +20,12 @@ def get_graded_value(args):
     url = fn["url"](args)
     response = requests.get(url)
     raw =  fn["selector"](Selector(text=response.text)).get()
-    return raw.split(".")[0].replace("$", "").replace(",", "")
+
+    time.sleep(5)
+    if raw == None:
+        return 0
+    else:
+        return raw.split(".")[0].replace("$", "").replace(",", "")
 
 cached_spot = {}
 def get_spot_value(args):
@@ -59,6 +65,7 @@ def get_value(args):
     except:
         print("There was a failure so reading from the cache.")
         value = cache[argsHash]
+    print(args, value)
     return value
 
 
