@@ -63,7 +63,7 @@ def get_value(args):
         value = _get_value(args)
         cache[argsHash] = value
     except:
-        print("There was a failure so reading from the cache.")
+        print("There was a failure so reading from the cache. Args:", args)
         value = cache[argsHash]
     print(args, value)
     return value

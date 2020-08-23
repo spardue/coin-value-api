@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
         reader = csv.DictReader(csvfile)
         totalValue = 0
+        next(reader)
         for row in reader:
             totalValue += float(coinvalue.get_value(row))
         print(totalValue)
